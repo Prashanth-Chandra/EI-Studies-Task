@@ -1,6 +1,11 @@
-import java.util.Scanner;
+import java.util.*;
 import java.lang.Thread;
+import java.io.*;
 
+// map<student id, student object>
+// map<classroom name, classroom object>
+
+// TODO: After the start of the cli, the program must retieve the data from the databases and store it in RAM
 
 class Util {
     public static void clear(){
@@ -28,8 +33,156 @@ class Util {
     }
 }
 
+class Student{
+    private String name;
+    private int id;
+    private static int count = 1;
+    private String path = "./Data/students.csv";
+
+    Student(String name){
+        this.name = name;
+        this.id = count;
+        count += 1;
+        System.out.println(this.name + " " + this.id);
+        add();
+    }
+
+    private void add(){
+        try{
+            BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
+            bw.write(id + "," + name);
+            bw.newLine();
+            bw.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    public int getId(){
+        return this.id;
+    }
+
+    @Override
+    public String toString(){
+        return "Student Name : " + this.name + ", ID : " + this.id;
+    }
+}
+
+class Classroom{
+    private static int classroom_count = 0;
+    private String name;
+    private List<Integer> studIds;
+    private List<Assignment> assignments = new ArrayList<>();
+    private String path = "./Data/classroom.csv";
+
+    Classroom(String name){
+        this.name = name;
+        classroom_count += 1;
+        studIds = new ArrayList<>();
+        add();
+    }
+
+    private void add(){
+        try{
+            BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
+            bw.write(name + "," + classroom_count + "");
+            bw.newLine();
+            bw.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    
+    public void addStudent(Student stud){
+        System.out.println(stud);
+        studIds.add(stud.getId());
+        updateDb();
+    }
+
+    private void updateDb(){
+        try{
+            BufferedWriter bw = new BufferedWriter(new FileWriter(path, false));
+            bw.write(getDetails());
+            bw.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private String getDetails(){
+        StringBuilder details = new StringBuilder();
+        details.append(name).append(",").append(classroom_count).append(",").append(getStudDetails()).append("\n");
+        return details.toString();
+    }
+
+    private String getStudDetails(){
+        StringBuilder details = new StringBuilder();
+
+        if(studIds.isEmpty()){
+            return "";
+        }
+
+        for(Integer id: studIds){
+            details.append(id).append(",");
+        }
+        
+        return details.substring(0, details.length() - 1);
+    }
+
+    public void scheduleAssignment(String detials){
+        Assignment as = new Assignment(name, detials);
+        assignments.add(as);
+
+        System.out.println("Assignment created for the class " + name + " with details : " + detials);
+    }
+
+    @Override
+    public String toString(){
+        return getDetails();
+    }
+
+}
+
+class Assignment{
+    String className;
+    String details;
+    int id;
+    static int count = 1;
+
+    Assignment(String className, String details){
+        this.className = className;
+        this.details = details;
+        this.id = count++;
+        add();
+    }
+
+    private void add(){
+        try{
+            BufferedWriter bw = new BufferedWriter(new FileWriter("./Data/assignments.csv", true));
+            bw.write(id + "," + className + "," + details);
+            bw.newLine();
+        } 
+        catch (IOException e){
+            System.out.println(e);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+// CLI
+
 class Cli{
-    String session;
+    private String session;
 
     Cli(String session){
         this.session = session;
@@ -39,7 +192,7 @@ class Cli{
         Util.clear();
 
         switch(session){
-            
+
         }
     }
 
@@ -184,9 +337,28 @@ class Auth{
     }
 }
 
-
 public class Main {
     public static void main(String[] args) {
-        new Auth();
+        // 1. Test adding classrooms
+        Classroom mathClass = new Classroom("Math 101");
+        Classroom scienceClass = new Classroom("Science 101");
+
+        // 2. Test adding students to classrooms
+        Student student1 = new Student("John Doe");
+        Student student2 = new Student("Jane Smith");
+        Student student3 = new Student("Alice Johnson");
+
+        mathClass.addStudent(student1); // Add John Doe to Math 101
+        mathClass.addStudent(student2); // Add Jane Smith to Math 101
+        scienceClass.addStudent(student3); // Add Alice Johnson to Science 101
+
+        // Print classroom details
+        System.out.println(mathClass);
+        System.out.println(scienceClass);
+
+        // 3. Test scheduling assignments
+        mathClass.scheduleAssignment("Homework 1: Solve problems 1-10");
+        scienceClass.scheduleAssignment("Lab Report: Chemistry Experiment 1");
+
     }
 }
