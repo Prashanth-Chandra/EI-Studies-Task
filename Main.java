@@ -7,6 +7,56 @@ import java.io.*;
 
 // TODO: After the start of the cli, the program must retieve the data from the databases and store it in RAM
 
+class globalVariables{
+    static ArrayList<
+}
+
+class User{
+    private String username;
+    private String password;
+    private int type;
+    private static String path = "./Data/user.csv";
+
+    public User(String username, String password, int type){
+        this.username = username;
+        this.password = password;
+        this.type = type;
+        add();
+    }
+
+    private void add(){
+        try{
+            BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
+            bw.write(username + "," + password + "," + String.valueOf(type));
+            bw.newLine();
+            bw.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+    public static int authenticate(String username, String password){
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line = br.readLine();
+
+            while(line != null){
+                String[] data = line.split(",");
+                if(data[0].equals(username) && data[1].equals(password)){
+                    return Integer.parseInt(data[2]);
+                }
+                line = br.readLine();
+            }
+            
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        return 0;
+    }
+}
+
 class Util {
     public static void clear(){
         try{
@@ -205,6 +255,7 @@ class Auth{
     Cli cli;
 
     Auth(){
+        Util.clear();
         sc = new Scanner(System.in);
         session = "guest";
         run();
@@ -256,14 +307,14 @@ class Auth{
 
         //TODO: use some txt or json file to authenticate the user
 
-        int n = 0; // 1 => Teacher, 2 => Student
+        int n = User.authenticate(username, password); // 1 => Teacher, 2 => Student
 
-        if(username.equals("teach") && password.equals("teach")){
-            n = 1;
-        }
-        if(username.equals("stud") && password.equals("stud")){
-            n = 2;
-        }
+        // if(username.equals("teach") && password.equals("teach")){
+        //     n = 1;
+        // }
+        // if(username.equals("stud") && password.equals("stud")){
+        //     n = 2;
+        // }
 
         if(n == 1){
             modify_session("teacher_auth");
@@ -284,30 +335,10 @@ class Auth{
         else{
             Util.clear();
             System.out.println("Invalid credentials");
-            System.out.println("Do you want to continue as guest / register or try again. (Valid responses '1' for continue as guest, '2' for register, any other for try again)");
-            int choice = sc.nextInt();
-
-            switch(choice){
-                case 1:
-                    System.out.println("Continuing as guest.");
-
-                    Util.slp();
-                    Util.clear();        
-                    run_cli();
-
-                    break;
-
-                case 2:
-                    Util.clear();
-                    register();
-                    break;
-
-                default:
-                    Util.clear();
-                    sc.nextLine();
-                    signin();
-                    break;
-            }
+            System.out.println("Taking you back to main menu.");
+            Util.slp();
+            Util.clear();
+            run();
         }
     }
 
@@ -316,15 +347,24 @@ class Auth{
         System.out.println("\nPlease note that this is only for teachers.\n");
         
         System.out.print("Please enter a new username\n>");
-        String newUsername = sc.nextLine();
+        String username = sc.nextLine();
 
         System.out.print("\nEnter the teacher passcode\n>");
         String passcode = sc.nextLine();
 
         System.out.print("\nPlease enter a new password\n>");
-        String newPassword = sc.nextLine();
+        String password = sc.nextLine();
 
         //TODO: update the txt ot json file to authenticate the user
+        if(!passcode.equals("BoyaRakesh")){
+            System.out.println("Wrong passcode. Taking you back to main menu.");
+            Util.slp();
+            Util.clear();
+            run();
+            return;
+        }
+
+        User user = new User(username, password, 1);
         
         System.out.println("\nYou have successfully registered, please sign now");
 
@@ -339,26 +379,6 @@ class Auth{
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Test adding classrooms
-        Classroom mathClass = new Classroom("Math 101");
-        Classroom scienceClass = new Classroom("Science 101");
-
-        // 2. Test adding students to classrooms
-        Student student1 = new Student("John Doe");
-        Student student2 = new Student("Jane Smith");
-        Student student3 = new Student("Alice Johnson");
-
-        mathClass.addStudent(student1); // Add John Doe to Math 101
-        mathClass.addStudent(student2); // Add Jane Smith to Math 101
-        scienceClass.addStudent(student3); // Add Alice Johnson to Science 101
-
-        // Print classroom details
-        System.out.println(mathClass);
-        System.out.println(scienceClass);
-
-        // 3. Test scheduling assignments
-        mathClass.scheduleAssignment("Homework 1: Solve problems 1-10");
-        scienceClass.scheduleAssignment("Lab Report: Chemistry Experiment 1");
-
+        new Auth();    
     }
 }
