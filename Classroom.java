@@ -39,9 +39,11 @@ public class Classroom{
         return 0;
     }
 
-    private static void updateClassroomCount(){
+    public static void updateClassroomCount(){
         try{
-            BufferedWriter bw = new BufferedWriter(new FileWriter("./Data/variables.csv", true));
+            BufferedWriter bw = new BufferedWriter(new FileWriter("./Data/variables.csv", false));
+            bw.write(String.valueOf(Student.getCount()));
+            bw.newLine();
             bw.write(String.valueOf(classroom_count));
             bw.newLine();
             bw.close();
@@ -57,7 +59,7 @@ public class Classroom{
             String line = br.readLine();
             while(line != null){
                 String[] data = line.split(",");
-                Classroom classroom = new Classroom(data[0]);
+                Classroom classroom = new Classroom(data[0], Integer.parseInt(data[1]));
                 Classroom.classroom_count = Integer.parseInt(data[1]);
                 GlobalVariables.classrooms.put(data[0], classroom);
                 line = br.readLine();
@@ -138,8 +140,18 @@ public class Classroom{
     public void scheduleAssignment(String detials){
         Assignment as = new Assignment(name, detials);
         assignments.add(as);
-
         System.out.println("Assignment created for the class " + name + " with details : " + detials);
+    }
+
+    public boolean submitAssignment(int assignmentId) {
+        for (Assignment as : assignments) {
+            if (as.id == assignmentId) {
+                System.out.println("Assignment " + assignmentId + " submitted for Classroom " + name);
+                return true;
+            }
+        }
+        System.out.println("Assignment not found.");
+        return false;
     }
 
     @Override

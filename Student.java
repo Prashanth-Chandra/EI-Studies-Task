@@ -38,15 +38,11 @@ public class Student{
     }
 
     private static void updateCount(){
-        try{
-            BufferedWriter bw = new BufferedWriter(new FileWriter("./Data/variables.csv"));
-            bw.write(String.valueOf(count - 1));
-            bw.newLine();
-            bw.close();
-        }
-        catch(Exception e){
-            System.out.println(e);
-        }
+        Classroom.updateClassroomCount();
+    }
+
+    public static int getCount(){
+        return count - 1;
     }
 
     public static void loadStudents(){
